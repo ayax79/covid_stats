@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufWriter};
 
-struct HttpClient {
+pub struct HttpClient {
     client: Client,
 }
 

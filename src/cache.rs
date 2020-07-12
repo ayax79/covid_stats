@@ -4,7 +4,7 @@ use std::io::{Result as IoResult, Error as IoError};
 
 const US_CSV: &str = "us.csv";
 
-struct Cache<'a> {
+pub struct Cache<'a> {
     cache_dir: &'a Path, 
 }
 
