@@ -1,23 +1,33 @@
-mod http;
 mod cache;
+mod http;
 
-use dirs;
 use cache::Cache;
+use dirs;
 use http::HttpClient;
-
-pub(crate) const US_DATA: &str = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv";
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let home_dir = dirs::home_dir().ok_or(std::io::Error::new(std::io::ErrorKind::Other, "No home directory"))?;
+    let cache_dir = cache_dir()?;
 
-    let cache = Cache::new(&home_dir)?;
-    let http_client = HttpClient::new();
+    let cache = Cache::new(&cache_dir)?;
+    let http_client = HttpClient::new(&cache);
 
-    let us_csv = cache.us();
-    if !us_csv.exists() {
-        http_client.fetch(US_DATA, &us_csv).await?;
-    }
+    let path = http_client.fetch_us().await?;
+    println!("Fetched US results info to path: {:?}", path);
 
     Ok(())
+}
+
+fn cache_dir() -> std::io::Result<PathBuf> {
+    let mut cache_dir = dirs::home_dir().ok_or(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        "No home directory",
+    ))?;
+    cache_dir.push(".covid_data");
+
+    if !cache_dir.exists() {
+        std::fs::create_dir(&cache_dir)?;
+    }
+    Ok(cache_dir)
 }
